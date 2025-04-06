@@ -8,27 +8,27 @@ const RELEVANCY_SCHEMA = z
     reasoning: z
       .string()
       .describe(
-        "Reasoning for why the webpage is or isn't relevant to your company's products.",
+        "Reasoning for why the content is or isn't relevant to AI engineering, tools, or innovations.",
       ),
     relevant: z
       .boolean()
       .describe(
-        "Whether or not the webpage is relevant to your company's products.",
+        "Whether or not the content is relevant to AI engineering, tools, or innovations.",
       ),
   })
-  .describe("The relevancy of the content to your company's products.");
+  .describe("The relevancy of the content to AI engineering, tools, or innovations.");
 
-const VERIFY_RELEVANT_CONTENT_PROMPT = `You are a highly regarded marketing employee.
-You're provided with a Tweet, and the page content of links in the Tweet. This Tweet was sent to you by a third party claiming it's relevant and implements your company's products.
-Your task is to carefully read over the entire page, and determine whether or not the content actually implements and is relevant to your company's products.
-You're doing this to ensure the content is relevant to your company, and it can be used as marketing material to promote your company.
+const VERIFY_RELEVANT_CONTENT_PROMPT = `You are evaluating content for Chris Vivas, an AI engineer who shares valuable insights about AI news, tools, innovations, and technical AI strategies.
+You're provided with a Tweet and the page content of links in the Tweet. Your task is to determine if this content is relevant and valuable for Chris's audience.
+You need to carefully read the entire content and determine if it aligns with Chris's focus areas:
 
 ${getPrompts().businessContext}
 
 ${getPrompts().contentValidationPrompt}
 
-Given this context, examine the entire Tweet plus webpage content closely, and determine if the content implements your company's products.
-You should provide reasoning as to why or why not the content implements your company's products, then a simple true or false for whether or not it implements some.`;
+Given this context, examine the entire Tweet plus webpage content closely, and determine if the content is relevant to AI engineering, tools, innovations, or technical strategies.
+You should provide reasoning as to why the content is or isn't relevant to Chris's audience, followed by a simple true or false determination.
+Content should be considered relevant if it provides substantive information about AI that would be useful to Chris's followers.`;
 
 async function verifyGeneralContentIsRelevant(
   content: string,
@@ -76,7 +76,7 @@ ${pageContents.map((content, index) => `<webpage-content key="${index}">\n${cont
 }
 
 /**
- * Verifies the Tweet & webpage contents provided is relevant to your company's products.
+ * Verifies the Tweet & webpage contents provided is relevant to AI engineering, tools, or innovations.
  */
 export async function validateTweetContent(
   state: typeof VerifyTweetAnnotation.State,

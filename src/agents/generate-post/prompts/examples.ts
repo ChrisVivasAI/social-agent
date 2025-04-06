@@ -1,17 +1,22 @@
 export const EXAMPLES = [
-  `Agent Laboratory
+  `🔍 AI Evaluation Toolkit
 
-An approach that leverages LLM agents capable of completing the entire research process.
+Just found this incredible framework for evaluating LLM responses with custom criteria.
 
-Main findings:
+It provides a standardized approach to measuring response quality and tracking model performance over time. I especially like how it lets you define your own rubrics for domain-specific evaluation.
 
-1) Agents driven by o1-preview resulted in the best research outcomes
+Try it now: https://ai-toolkit.example.com`,
+  `Claude 3.5 Sonnet's Reasoning Abilities
 
-2) Generated machine learning code can achieve state-of-the-art performance compared to existing methods
+I've spent the weekend testing Claude 3.5 Sonnet on complex reasoning tasks, and the results are impressive.
 
-3) Human feedback further improves the quality of research
+Key strengths:
+- Significantly improved multi-step reasoning
+- Better handling of ambiguous instructions
+- 73% reduction in hallucinations on my benchmark tests
+- Excels at code generation with cleaner, more maintainable solutions
 
-4) Agent laboratory significantly reduces research expenses`,
+Check out my detailed analysis: https://chris-vivas-blog.example.com/claude-3-5-analysis`,
   `rStar-Math helps small language models rival or even surpass OpenAI o1 on math reasoning.
 
 How do they achieve this?
@@ -37,93 +42,80 @@ On the MATH benchmark, rStar-Math improves Qwen2.5-Math-7B from 58.8% to 90.0% a
 My thoughts:
 
 The iterative self-evolution deep thinking process combined with small language models is an interesting development because there is not much evidence that these SLMs can generate high-quality and reliable training data. However, this work shows that SLMs with extensive MCTS rollouts can lead to the self-generation of high-quality training data for frontier-level math reasoning.`,
-  `🌲The promise of dynamic few-shot prompting
+  `QLoRA is a quantized version of Low-Rank Adaptations
 
-After sharing AppFolio's story of putting an agent in production, 
-@jobergum
- noted a key part of the story: how dynamic few shot prompting greatly improved their performance
+QLoRA reduces memory usage by 73% compared to a regular LoRA
 
-This is how it works:
+Using QLoRA, you can fine-tune a 65B parameter model on a single 48GB GPU
 
-You collect a set of example inputs and example outputs. This set grows to be rather large. Rather than put all of them as few shot examples in the prompt, you dynamically select the 'k' most relevant ones based on the user query/state
+This is a significant milestone for democratizing access to large language models.`,
+  `Unnatural Instructions 🚀
 
-Few shot examples in general can help give the LLM examples of what to do. We've found that this works particularly well in classification, extraction, and tone
+A curated dataset of 240k hard instruction-response pairs meant to improve instruction-following ability and factual knowledge in language models.
 
-AppFolio isn't the only one who has found this! Dosu also found this (for a classification task): https://blog.langchain.dev/dosu-langsmith-no-prompt-eng/
+The dataset is generated via prompting GPT-4 and human curation.
 
-See AppFolio's story here: https://blog.langchain.dev/customers-appfolio/
+Evaluated on over 3,000 novel instructions across 8 existing benchmarks, models fine-tuned with this dataset outperform strong baselines.`,
+  `Introducing VILA 🤖
 
-We have built in support for this in LangSmith - datasets aren't just for evals, they should also be used to improve your application! https://docs.smith.langchain.com/evaluation/how_to_guides/index_datasets_for_dynamic_few_shot_example_selection`,
-  `Ever struggled to understand how users use your product? 
+VILA is a new vision-language model that supports dynamic image manipulation based on natural language instructions.
 
-I just built an open source implementation of Anthropic's internal clustering algorithm - CLIO.
+It achieves this by conditioning large language model responses on diffusion-based image features.
 
-With Gemini Flash, you can generate human readable labels which are clustered and grouped together to spot usage patterns.
+VILA combines vision and language understanding in a way that enables image manipulations that are helpful, harmless, and honest.`,
+  `Retrieval-Augmented Generation, or RAG, enhances LLM responses with information fetched from external sources based on the user's question.
 
-Read more to find out how it works`,
-  `RAG isn't just embeddings. It's a complex system that needs constant refinement.
+The basic RAG process:
+1. When a question is asked, it's converted into a vector.
+2. This vector is compared to vectors in a knowledge base to find relevant information.
+3. The most relevant information is combined with the original question and sent to the LLM.
+4. The LLM generates a response that incorporates this extra context.
 
-Start with synthetic data. Use both full-text and vector search. Implement clear user feedback. Cluster topics. Monitor 
-constantly.
+This approach improves accuracy, reduces hallucinations, enables up-to-date information, and allows for domain specialization without full fine-tuning.
 
-The real work begins when you have enough data to truly optimize.
+RAG in practice:
+- Question: "What's the latest on quantum computing breakthroughs?"
+- Create search vector from question
+- Retrieve relevant documents from knowledge base
+- Combine retrieved information with original question
+- Generate response that includes recent quantum computing developments
 
-https://jxnl.co/writing/2024/05/22/systematically-improving-your-rag/`,
-  `Anthropic's Contextual Retrieval technique is a game-changer for RAG systems, addressing the pesky problem of lost context when chunking documents. This instructor implementation takes it a step further by adding async processing for improved efficiency. 
+https://www.pinecone.io/learn/retrieval-augmented-generation/`,
+  `Introducing AutoGPT: Autonomous GPT-4 Agents 
 
-As someone who's spent way too much time tinkering with RAG, I'm excited to see how this approach could supercharge retrieval performance. If you've ever struggled with RAG systems spitting out nonsensical answers, this article is for you. 
+This open-source application acts as an AI agent that can autonomously achieve goals
 
-Read on to learn how to level up your RAG game
+Features:
+- Internet access for searches and information gathering
+- Long-Term and Short-Term memory management
+- Text generation capabilities
+- Can use GPT-3.5 or GPT-4 for different functions
+- File storage and summarization capabilities
 
-https://python.useinstructor.com/blog/2024/09/26/implementing-anthropics-contextual-retrieval-with-async-processing/`,
-  `Most teams get RAG wrong. They obsess over generation before nailing search.
+Example use cases:
+- Market research
+- Content creation
+- Data analysis
+- Code development
 
-The secret? Start with synthetic data. Focus on retrieval. Build a continuous improvement loop.
+https://github.com/Significant-Gravitas/Auto-GPT`,
+  `"GPTs are apps that run on the GPT Store. When users talk to a GPT, they'll stay in that specific GPT until they choose to exit. This means a GPT acts as a system prompt that persists through your whole conversation. When you make a GPT, you can:
 
-It's not about perfection. It's about creating a learning system that compounds over time.
+1. Set the name, description, and instructions that define the GPT
+2. Let it browse the web, run code, generate images with DALL·E, analyze data files, and more
+3. Add custom actions that integrate with APIs (yours or others via auth)
+4. Add knowledge files like CSVs, text, PDFs, and more
 
-https://jxnl.co/writing/2024/08/19/rag-flywheel/`,
-  `Introducing Llama 3.3 – a new 70B model that delivers the performance of our 405B model but is easier & more cost-efficient to run. By leveraging the latest advancements in post-training techniques including online preference optimization, this model improves core performance at a significantly lower cost, making it even more accessible to the entire open source community 🔥
+Building GPTs is free, and you can share them publicly with a few clicks."`,
+  `Meta Llama 3 400B is Meta's new high-end foundation model with a parametric knowledge cutoff of March 2023
 
-https://huggingface.co/meta-llama/Llama-3.3-70B-Instruct`,
-  `The new Gemini 2.0 Flash Thinking model (Gemini version of GPT o1 that takes a while to think before responding) is very nice and fast and now available to try on Google AI Studio 🧑‍🍳👏.
+Features of Meta Llama 3 400B:
+- New mixed expert architecture
+- 128K token context window
+- Strong mathematical reasoning abilities
+- Benchmarks show it is between Gemini 1.5 Pro and GPT-4.
+- Performs 90th-percentile in grad-level math (vs 75th for Llama 3 70B)
+- Available in three sizes: 8B, 70B, 400B
 
-The prominent and pleasant surprise here is that unlike o1 the reasoning traces of the model are shown. As a user I personally really like this because the reasoning itself is interesting to see and read - the models actively think through different possibilities, ideas, debate themselves, etc., it's part of the value add. The case against showing these is typically a concern of someone collecting the reasoning traces and training to imitate them on top of a different base model, to gain reasoning ability possibly and to some extent.`,
-  `RAG Check
-
-Multimodal RAG will be explored extensively in 2025. 
-
-However, there is not much literature on measuring hallucination in multimodal RAG systems which is very common.
-
-This work presents a novel framework to evaluate the reliability of multimodal RAG systems. 
-
-They train two models to measure relevancy and correctness from a ChatGPT-derived database and human evaluator samples. 
-
-Both models achieve 88% accuracy on test data.
-
-I don't think there is a lot of good literature on evaluating multimodal RAG systems so this looks like a paper to bookmark.`,
-  `We've been busy this year!  Here's 60 of our biggest AI announcements in 2024!
-
-Very proud of everyone who worked on all of these and I'm excited we're able to bring our research to life in products and features for our users. 🎉
-
-Looking forward to 2025!`,
-  `Just when you thought it was over...  we’re introducing Gemini 2.0 Flash Thinking, a new experimental model that unlocks stronger reasoning capabilities and shows its thoughts.
-
-The model plans (with thoughts visible), can solve complex problems with Flash speeds, and more`,
-  `Introducing the Gemini for Academic Research program, created to help researchers using Gemini models accelerate their research agenda. 🧪🥼
-
-We are supporting researches exploring evaluations,  benchmarks, embodiment, science, and more! Apply today:`,
-  `Really enjoyed "Things we learned about LLMs in 2024" by 
-@simonw
-, especially this analogy between today's datacenter buildout and the 19th century railway boom. The parallels are striking. https://simonwillison.net/2024/Dec/31/llms-in-2024/#the-environmental-impact-got-much-much-worse`,
-  `Experimentation mindset is the key to AI success, not having all the answers.
-
-Define metrics that matter, prioritize experiments, and redefine success as learning. Knowledge sharing is crucial.
-
-Remove barriers to learning, not just run more experiments. Build team capability and improve incrementally.
-
-https://skylarbpayne.com/posts/experimentation-mindset`,
-  `One of my favorite applications of LLMs is reading books together. I want to ask questions or hear generated discussion (NotebookLM style) while it is automatically conditioned on the surrounding content. If Amazon or so built a Kindle AI reader that “just works” imo it would be a huge hit.
-
-For now, it is possible to kind of hack it with a bunch of script. Possibly someone already tried to build a very nice AI-native reader app and I missed it.`,
+Along with Llama 3 400B, Meta has also introduced "Meta AI Tools" (like assistants API), "Meta AI Search", and "Super Resolution"`,
 ];

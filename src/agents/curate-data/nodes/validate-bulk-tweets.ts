@@ -6,7 +6,7 @@ import { TweetV2 } from "twitter-api-v2";
 
 const EXAMPLES = `<example index="0">
     <example-tweet>
-      RT @arjunkhemani: .@naval: Looking for truth is the opposite of looking for social approval.\n\n“I’m deeply suspicious of groups of people co…
+      RT @arjunkhemani: .@naval: Looking for truth is the opposite of looking for social approval.\n\n"I'm deeply suspicious of groups of people co…
     </example-tweet>
 
     <scratchpad>
@@ -70,19 +70,30 @@ const EXAMPLES = `<example index="0">
     is_relevant: false
   </example>`;
 
-const VALIDATE_BULK_TWEETS_PROMPT = `You are an AI assistant tasked with curating a dataset of tweets about AI. Your job is to review a series of tweets and determine which ones are relevant to AI, LLMs, and related topics. The tweets are provided from a 'Twitter List' of users who primarily tweet about AI.
+const VALIDATE_BULK_TWEETS_PROMPT = `You are curating content for Chris Vivas, an AI engineer who shares valuable insights about AI news, tools, innovations, and technical AI strategies. Your job is to review tweets and identify those that align with Chris's focus areas and would provide value to his audience.
 
-Here are the rules for determining whether a tweet is relevant:
-1. The tweet discusses AI, LLMs, or anything interesting related to AI.
-2. The tweet is a retweet of content about AI, LLMs, or anything interesting related to AI.
-3. The tweet mentions a research paper on AI, LLMs, or related topics.
-4. The tweet is about a new product, tool, or service related to AI, LLMs, or anything interesting related to AI.
-5. The tweet references a blog post, video, or other content related to AI, LLMs, or anything interesting related to AI.
+Here are the criteria for determining whether a tweet is relevant:
 
-Additionally, ensure that the tweet has enough content to be interesting and engaging. Avoid short tweets that merely reference AI without providing substantial information that could be used to create longer content or posts about AI.
-The tweets you do approve will be used to create educational content about AI, so ensure the tweets approved are high quality, engaging, and informative.
+1. The tweet discusses practical AI tools, frameworks, or applications that solve real-world problems
+2. The tweet shares technical AI strategies, implementation techniques, or best practices
+3. The tweet mentions significant AI research breakthroughs with practical implications
+4. The tweet provides insights about LLM developments, fine-tuning techniques, or prompt engineering
+5. The tweet explores AI engineering topics like architecture patterns, deployment, or MLOps
+6. The tweet covers multimodal AI innovations combining text, vision, audio, or other modalities
+7. The tweet addresses autonomous agent frameworks, tools, or novel agent applications
+8. The tweet discusses responsible AI practices, ethics, or bias mitigation strategies
+9. The tweet showcases interesting open-source AI projects developers can use or contribute to
+10. The tweet shares techniques for optimizing AI systems for performance, cost, or efficiency
 
-You will be provided with a list of tweets, each associated with an index number. Your task is to analyze these tweets and identify which ones are relevant according to the rules above.
+Additionally, ensure that the tweet has sufficient depth and substance to generate meaningful content. The tweets should contain information that Chris's audience of AI practitioners, engineers, and enthusiasts would find valuable and applicable to their work.
+
+Prioritize tweets that:
+- Contain technical depth rather than just surface-level announcements
+- Provide practical insights that can be applied by AI engineers
+- Showcase innovations that advance the state of AI implementation
+- Share specific methodologies or approaches rather than vague concepts
+
+You will be provided with a list of tweets, each associated with an index number. Your task is to analyze these tweets and identify which ones are relevant according to the criteria above.
 
 Use the following examples to guide your analysis:
 <analysis-examples>
@@ -94,8 +105,8 @@ Here are the tweets to analyze:
 {TWEETS}
 </tweets>
 
-Use a scratchpad to analyze each tweet independently. In your scratchpad, briefly explain why each tweet is relevant or not relevant based on the rules provided. Then, create a list of the index numbers for the relevant tweets.
-Remember, we only want the highest quality AI tweets, so you should lean towards NOT including a tweet unless it is clearly highly relevant, and would be useful when writing educational content about AI.
+Use a scratchpad to analyze each tweet independently. In your scratchpad, briefly explain why each tweet is relevant or not relevant based on the criteria provided. Then, create a list of the index numbers for the relevant tweets.
+Remember, we only want high-quality tweets that align with Chris's focus on practical AI engineering, tools, innovations, and technical strategies.
 
 <scratchpad>
 [Analyze each tweet here, explaining your reasoning]
@@ -103,7 +114,7 @@ Remember, we only want the highest quality AI tweets, so you should lean towards
 
 After your analysis, provide your final answer to the 'answer' tool.
 Remember, there will be times when all of the tweets are NOT relevant. In this case, do not be worried and simply answer with an empty array.
-I won't be upset with you if you don't find any relevant tweets, however I WILL be upset if you mark tweets as relevant which are NOT actually relevant.
+I won't be upset with you if you don't find any relevant tweets, however I WILL be upset if you mark tweets as relevant which do NOT align with Chris's focus areas.
 
 Begin!`;
 
@@ -118,10 +129,11 @@ const answerSchema = z
 function formatTweets(tweets: TweetV2[]): string {
   return tweets
     .map((t, index) => {
-      const fullText = t.note_tweet?.text || t.text || "";
-      return `<tweet index="${index}">\n${fullText}\n</tweet>`;
+      return `  <tweet index="${index}">
+    ${t.text}
+  </tweet>`;
     })
-    .join("\n");
+    .join("\n\n");
 }
 
 /**
@@ -143,34 +155,52 @@ function formatTweets(tweets: TweetV2[]): string {
 export async function validateBulkTweets(
   state: CurateDataState,
 ): Promise<Partial<CurateDataState>> {
-  const model = new ChatAnthropic({
-    model: "claude-3-5-sonnet-latest",
-    temperature: 0,
-  }).withStructuredOutput(answerSchema, { name: "answer" });
+  // If we have no tweets, there's nothing to filter.
+  if (!state.rawTweets?.length) {
+    return {
+      validatedTweets: [],
+    };
+  }
 
-  // Chunk the tweets into groups of 25
-  const chunkedTweets = chunkArray(state.rawTweets, 25);
-  const allRelevantTweets: TweetV2[] = [];
+  // This is pretty dumb, but we need to chunk our tweets because we can only
+  // process so many at a time. We will process 20 at a time.
+  const tweetChunks = chunkArray(state.rawTweets, 20);
+  const relevantTweets: TweetV2[] = [];
 
-  for (const chunk of chunkedTweets) {
-    const formattedPrompt = VALIDATE_BULK_TWEETS_PROMPT.replace(
+  for (const [idx, tweetChunk] of tweetChunks.entries()) {
+    console.log(`Processing chunk ${idx + 1} of ${tweetChunks.length}`);
+
+    // Format the tweets into a string for the model
+    const formattedTweets = formatTweets(tweetChunk);
+
+    // Get the relevance of the tweets
+    const prompt = VALIDATE_BULK_TWEETS_PROMPT.replace(
       "{TWEETS}",
-      formatTweets(chunk),
+      formattedTweets,
     );
 
-    const { answer } = await model.invoke([["user", formattedPrompt]]);
+    const model = getVertexChatModel(
+      "claude-3-5-sonnet-latest",
+      0,
+    ).withStructuredOutput(answerSchema);
 
-    const answerSet = new Set(answer);
-    const relevantTweets = chunk.filter((_, index) => answerSet.has(index));
-    if (relevantTweets.length !== answer.length) {
-      console.warn(
-        `Expected ${answer.length} relevant tweets, but found ${relevantTweets.length}`,
-      );
+    const resp = await model.invoke([
+      {
+        role: "system",
+        content: prompt,
+      },
+    ]);
+
+    // Now we just need to extract the relevant tweets
+    // The model returned a list of indices
+    const relevantIndices = resp.answer;
+    // We need to map those indices to the actual tweets
+    for (const idx of relevantIndices) {
+      relevantTweets.push(tweetChunk[idx]);
     }
-    allRelevantTweets.push(...relevantTweets);
   }
 
   return {
-    validatedTweets: allRelevantTweets,
+    validatedTweets: relevantTweets,
   };
 }
