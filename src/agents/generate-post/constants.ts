@@ -95,5 +95,13 @@ export const TWITTER_USER_ID = "twitterUserId";
 export const TWITTER_TOKEN = "twitterToken";
 export const TWITTER_TOKEN_SECRET = "twitterTokenSecret";
 export const INGEST_TWITTER_USERNAME = "ingestTwitterUsername";
+// Instagram
+export const INSTAGRAM_ACCESS_TOKEN = "instagramAccessToken";
+export const INSTAGRAM_PAGE_ID = "instagramPageId";
+export const POST_TO_INSTAGRAM = "postToInstagram";
+// Facebook
+export const FACEBOOK_ACCESS_TOKEN = "facebookAccessToken";
+export const FACEBOOK_PAGE_ID = "facebookPageId";
+export const POST_TO_FACEBOOK = "postToFacebook";
 // Simplified text only mode
 export const TEXT_ONLY_MODE = "textOnlyMode";

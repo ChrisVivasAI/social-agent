@@ -1,6 +1,6 @@
 import { Annotation, END } from "@langchain/langgraph";
 import { IngestDataAnnotation } from "../ingest-data/ingest-data-state.js";
-import { POST_TO_LINKEDIN_ORGANIZATION, TEXT_ONLY_MODE } from "./constants.js";
+import { POST_TO_LINKEDIN_ORGANIZATION, POST_TO_INSTAGRAM, POST_TO_FACEBOOK, TEXT_ONLY_MODE } from "./constants.js";
 import { DateType } from "../types.js";
 import { VerifyLinksResultAnnotation } from "../verify-links/verify-links-state.js";
 
@@ -85,6 +85,24 @@ export const GeneratePostConfigurableAnnotation = Annotation.Root({
    * If true, [LINKEDIN_ORGANIZATION_ID] is required.
    */
   [POST_TO_LINKEDIN_ORGANIZATION]: Annotation<boolean | undefined>,
+  /**
+   * Whether to post to Instagram.
+   * Requires INSTAGRAM_ACCESS_TOKEN and INSTAGRAM_PAGE_ID environment variables.
+   * @default false
+   */
+  [POST_TO_INSTAGRAM]: Annotation<boolean | undefined>({
+    reducer: (_state, update) => update,
+    default: () => false,
+  }),
+  /**
+   * Whether to post to Facebook.
+   * Requires FACEBOOK_ACCESS_TOKEN and FACEBOOK_PAGE_ID environment variables.
+   * @default false
+   */
+  [POST_TO_FACEBOOK]: Annotation<boolean | undefined>({
+    reducer: (_state, update) => update,
+    default: () => false,
+  }),
   /**
    * Whether or not to use text only mode throughout the graph.
    * If true, it will not try to extract, validate, or upload images.

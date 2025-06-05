@@ -1,5 +1,5 @@
 export const EXAMPLES = [
-  `It's 3AM in Miami and this evaluation framework just caught a body 🥊
+  `This evaluation framework just caught a body 🥊
 
 Just dropped a framework that measures LLM responses like we're scoring a championship fight. Custom scoring criteria, performance tracking over time, and zero mercy for hallucinations.
 
@@ -29,7 +29,7 @@ Results hitting harder than Miami heat:
 
 This isn't just another benchmark chase - it's proof that small models can throw hands with the heavyweights when trained right.`,
 
-  `3AM Miami Check: QLoRA just dropped the memory tax by 73% 🚀
+  `QLoRA just dropped the memory tax by 73% 🚀
 
 Fine-tune a 65B parameter model on a single 48GB GPU like it's nothing. 
 
@@ -47,7 +47,7 @@ This new vision-language model edits images like it's got an art degree from Mia
 
 Natural language in, pixel-perfect edits out. No cap, just clean, honest image manipulation.`,
 
-  `It's 2AM and I'm watching RAG throw haymakers at hallucinations 🥊
+  `I'm watching RAG throw haymakers at hallucinations 🥊
 
 How it works:
 1. Question drops in, gets vectorized

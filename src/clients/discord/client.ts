@@ -16,6 +16,7 @@ import fs from 'fs';
 import moment from 'moment';
 import { fileURLToPath } from 'url';
 import { DiscordClientArgs, DiscordMessageData, CommandDefinition, SimpleMessage } from './types.js';
+import { DiscordCommandHandler } from './commandHandler.js';
 
 // Create __dirname equivalent for ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -27,17 +28,28 @@ const __dirname = path.dirname(__filename);
  */
 export class DiscordClient {
   private client: Client;
-  private channelId: string;
-  private channelName: string;
+  private channelId?: string;
+  private channelName?: string;
   private commands: Collection<string, CommandDefinition>;
   private ready: boolean = false;
   private readyPromise: Promise<void>;
   private readyResolve!: () => void;
+  private commandHandler: DiscordCommandHandler;
 
-  constructor(args: DiscordClientArgs = {}) {
-    if (!args.channelId && !args.channelName) {
+  constructor({ channelId, channelName }: { channelId?: string; channelName?: string }) {
+    if (!channelId && !channelName) {
       throw new Error("Either channelId or channelName must be provided");
     }
+
+    this.channelId = channelId;
+    this.channelName = channelName;
+    this.commands = new Collection();
+    this.commandHandler = new DiscordCommandHandler();
+    
+    // Create a promise that resolves when the client is ready
+    this.readyPromise = new Promise((resolve) => {
+      this.readyResolve = resolve;
+    });
 
     // Set up client with required intents
     this.client = new Client({
@@ -46,16 +58,6 @@ export class DiscordClient {
         GatewayIntentBits.GuildMessages,
         GatewayIntentBits.MessageContent
       ],
-      ...args.clientOptions
-    });
-
-    this.channelId = args.channelId || "";
-    this.channelName = args.channelName || "";
-    this.commands = new Collection();
-    
-    // Create a promise that resolves when the client is ready
-    this.readyPromise = new Promise((resolve) => {
-      this.readyResolve = resolve;
     });
 
     // Set up event handlers
@@ -63,13 +65,6 @@ export class DiscordClient {
 
     // Set up commands
     this.loadCommands();
-
-    // Connect to Discord
-    const token = args.token || process.env.DISCORD_BOT_TOKEN;
-    if (!token) {
-      throw new Error('Discord bot token not provided');
-    }
-    this.client.login(token);
   }
 
   /**
@@ -78,19 +73,89 @@ export class DiscordClient {
   private setupEventHandlers(): void {
     // Client ready event
     this.client.once(Events.ClientReady, client => {
-      console.log(`Discord bot logged in as ${client.user.tag}`);
+      console.log(`✅ Discord bot logged in as ${client.user.tag}`);
+      console.log(`🔗 Configured channel ID: ${this.channelId || 'Not set'}`);
+      console.log(`🔗 Configured channel name: ${this.channelName || 'Not set'}`);
       this.ready = true;
       this.readyResolve();
     });
 
-    // Message creation event for command handling
-    this.client.on(Events.MessageCreate, this.handleMessage.bind(this));
+    // Handle incoming messages for command processing
+    this.client.on(Events.MessageCreate, async (message: Message) => {
+      // Ignore messages from bots
+      if (message.author.bot) return;
+
+      // Log all messages for debugging
+      console.log(`📨 Received message in channel ${message.channel.id} (${message.channel.type === 0 ? message.channel.name : 'DM'}): "${message.content}"`);
+
+      // Check channel restrictions
+      let channelMatch = false;
+      if (this.channelId) {
+        channelMatch = message.channel.id === this.channelId;
+        console.log(`🔍 Channel ID check: ${message.channel.id} === ${this.channelId} = ${channelMatch}`);
+      } else if (this.channelName && message.channel.type === 0) {
+        channelMatch = message.channel.name === this.channelName;
+        console.log(`🔍 Channel name check: ${message.channel.name} === ${this.channelName} = ${channelMatch}`);
+      } else {
+        // If no channel restrictions, process all channels
+        channelMatch = true;
+        console.log(`🔍 No channel restrictions, processing message`);
+      }
+
+      if (!channelMatch) {
+        console.log(`⏭️ Skipping message - wrong channel`);
+        return;
+      }
+
+      // Only process messages that start with !
+      if (!message.content.startsWith('!')) {
+        console.log(`⏭️ Skipping message - doesn't start with !`);
+        return;
+      }
+
+      try {
+        console.log(`📝 Processing Discord command: ${message.content}`);
+        
+        const context = {
+          userId: message.author.id,
+          username: message.author.username,
+          channelId: message.channel.id,
+          messageId: message.id
+        };
+
+        const response = await this.commandHandler.handleCommand(message.content, context);
+        
+        // Send response back to Discord
+        await message.reply(response);
+        
+        console.log(`✅ Discord command processed successfully`);
+      } catch (error) {
+        console.error('❌ Error processing Discord command:', error);
+        
+        try {
+          await message.reply(`❌ Error processing command: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        } catch (replyError) {
+          console.error('❌ Error sending error reply:', replyError);
+        }
+      }
+    });
+
+    this.client.on('error', (error) => {
+      console.error('❌ Discord client error:', error);
+    });
   }
 
   /**
    * Load command modules from the commands directory
+   * NOTE: This is legacy code and not used by the new command handler
    */
   private loadCommands(): void {
+    console.log('⚠️ Legacy command loading disabled - using DiscordCommandHandler instead');
+    // The old command system is disabled in favor of the new DiscordCommandHandler
+    return;
+    
+    // Legacy code commented out:
+    /*
     const commandsDir = path.join(__dirname, 'commands');
     
     if (!fs.existsSync(commandsDir)) {
@@ -116,31 +181,7 @@ export class DiscordClient {
         console.error(`Error loading command file ${file}:`, error);
       }
     }
-  }
-
-  /**
-   * Handle incoming messages and execute commands
-   */
-  private async handleMessage(message: Message): Promise<void> {
-    if (message.author.bot) return;
-
-    const prefix = '!';
-    if (!message.content.startsWith(prefix)) return;
-
-    const args = message.content.slice(prefix.length).trim().split(/ +/);
-    const commandName = args.shift()?.toLowerCase();
-
-    if (!commandName) return;
-
-    const command = this.commands.get(commandName);
-    if (!command) return;
-
-    try {
-      await command.execute({ message, args, client: this.client });
-    } catch (error) {
-      console.error(`Error executing command ${commandName}:`, error);
-      await message.reply('There was an error executing that command.');
-    }
+    */
   }
 
   /**
@@ -269,7 +310,7 @@ export class DiscordClient {
   /**
    * Send a message to a Discord channel
    */
-  async sendMessage(message: string): Promise<void> {
+  async sendMessage(content: string): Promise<void> {
     await this.ensureReady();
 
     if (!this.channelId) {
@@ -282,7 +323,7 @@ export class DiscordClient {
         throw new Error(`Channel ${this.channelId} is not a text channel`);
       }
 
-      await channel.send(message);
+      await channel.send(content);
     } catch (error) {
       console.error('Error sending message to Discord:', error);
       throw error;
@@ -310,6 +351,24 @@ export class DiscordClient {
    */
   async disconnect(): Promise<void> {
     await this.client.destroy();
-    console.log('Discord client disconnected');
+    console.log('✅ Discord client disconnected');
+  }
+
+  /**
+   * Login to Discord
+   */
+  async login(): Promise<void> {
+    const token = process.env.DISCORD_BOT_TOKEN;
+    if (!token) {
+      throw new Error('DISCORD_BOT_TOKEN environment variable is required');
+    }
+
+    try {
+      await this.client.login(token);
+      console.log('✅ Discord client logged in successfully');
+    } catch (error) {
+      console.error('❌ Failed to login to Discord:', error);
+      throw error;
+    }
   }
 } 

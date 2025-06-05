@@ -2,6 +2,8 @@ import { LangGraphRunnableConfig } from "@langchain/langgraph";
 import * as cheerio from "cheerio";
 import {
   POST_TO_LINKEDIN_ORGANIZATION,
+  POST_TO_INSTAGRAM,
+  POST_TO_FACEBOOK,
   TEXT_ONLY_MODE,
 } from "./generate-post/constants.js";
 
@@ -503,6 +505,28 @@ export function shouldPostToLinkedInOrg(
       ? postToOrgConfig
       : process.env.POST_TO_LINKEDIN_ORGANIZATION === "true";
   return postToOrg;
+}
+
+export function shouldPostToInstagram(
+  config: LangGraphRunnableConfig,
+): boolean {
+  const postToInstagramConfig = config.configurable?.[POST_TO_INSTAGRAM];
+  const postToInstagram =
+    postToInstagramConfig != null
+      ? postToInstagramConfig
+      : process.env.POST_TO_INSTAGRAM === "true";
+  return postToInstagram;
+}
+
+export function shouldPostToFacebook(
+  config: LangGraphRunnableConfig,
+): boolean {
+  const postToFacebookConfig = config.configurable?.[POST_TO_FACEBOOK];
+  const postToFacebook =
+    postToFacebookConfig != null
+      ? postToFacebookConfig
+      : process.env.POST_TO_FACEBOOK === "true";
+  return postToFacebook;
 }
 
 export async function sleep(ms: number) {

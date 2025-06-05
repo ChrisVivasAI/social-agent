@@ -113,6 +113,14 @@ export async function humanNode(
   state: typeof GeneratePostAnnotation.State,
   config: LangGraphRunnableConfig,
 ): Promise<Partial<typeof GeneratePostAnnotation.State>> {
+  console.log('🤖 Human node called!');
+  console.log('📊 Human node state:', {
+    hasPost: !!state.post,
+    hasScheduleDate: !!state.scheduleDate,
+    imageOptionsCount: state.imageOptions?.length || 0,
+    next: state.next
+  });
+
   if (!state.post) {
     throw new Error("No post found");
   }
@@ -170,6 +178,11 @@ export async function humanNode(
   const response = interrupt<HumanInterrupt[], HumanResponse[]>([
     interruptValue,
   ])[0];
+
+  console.log('📝 Human node response:', {
+    type: response.type,
+    args: response.args
+  });
 
   if (!["edit", "ignore", "accept", "response"].includes(response.type)) {
     throw new Error(
