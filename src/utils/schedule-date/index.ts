@@ -1,13 +1,5 @@
 import { LangGraphRunnableConfig } from "@langchain/langgraph";
-import {
-  isValid,
-  addDays,
-  isSunday,
-  isFriday,
-  isMonday,
-  isSaturday,
-  format,
-} from "date-fns";
+import { isValid, addDays, isSunday, isMonday, format } from "date-fns";
 import {
   getNextFriday,
   getNextMonday,
@@ -533,14 +525,14 @@ export function findAvailableRepurposeDates({
 
 interface FindAvailableBasicDateParams {
   baseDate: Date;
-  config: LangGraphRunnableConfig;
+  _config: LangGraphRunnableConfig;
   priority: "p1" | "p2" | "p3";
   takenScheduleDates: TakenScheduleDates;
 }
 
 async function findAvailableBasicDates({
   baseDate,
-  config,
+  _config: _config,
   priority,
   takenScheduleDates,
 }: FindAvailableBasicDateParams): Promise<Date> {
@@ -717,7 +709,7 @@ export async function getScheduledDateSeconds(
   if (isBasicPriority(scheduleDate)) {
     const nextAvailDate = await findAvailableBasicDates({
       baseDate,
-      config,
+      _config: config,
       priority: scheduleDate,
       takenScheduleDates,
     });

@@ -1,5 +1,4 @@
 import { getVertexChatModel } from "../../../utils/vertex-model.js";
-import { z } from "zod";
 
 const ROUTE_RESPONSE_PROMPT = `You are an AI assistant tasked with routing a user's response to one of two possible routes based on their intention. The two possible routes are:
 

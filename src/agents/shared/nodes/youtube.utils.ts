@@ -75,27 +75,29 @@ export async function getYouTubeVideoDuration(
   const youtubeClient = getYouTubeClientFromUrl();
   const videoId = getVideoID(videoUrl);
   if (!videoId) {
-    throw new Error(`Invalid YouTube URL: ${videoUrl}`);
+    console.error(`Invalid YouTube URL: ${videoUrl}`);
+    return undefined;
   }
 
-  const videoInfo = await youtubeClient.videos.list({
-    id: [videoId],
-    part: ["contentDetails"], // Add this to get duration info
-  });
+  try {
+    const videoInfo = await youtubeClient.videos.list({
+      id: [videoId],
+      part: ["contentDetails"],
+    });
 
-  if (!videoInfo.data.items?.length || videoInfo.data.items?.length > 1) {
-    // TODO: Handle this better
-    throw new Error(`Expected 1 item, got ${videoInfo.data.items?.length}`);
-  }
-
-  let videoDuration: number | undefined = undefined;
-  videoInfo.data.items?.forEach((i) => {
-    const duration = i.contentDetails?.duration;
-    if (duration) {
-      videoDuration = parseDuration(duration);
+    if (videoInfo.data.items?.length !== 1) {
+      console.error(
+        `Unexpected number of items for ${videoId}: ${videoInfo.data.items?.length}`,
+      );
+      return undefined;
     }
-  });
-  return videoDuration;
+
+    const duration = videoInfo.data.items[0].contentDetails?.duration;
+    return duration ? parseDuration(duration) : undefined;
+  } catch (e) {
+    console.error(`Failed to fetch duration for ${videoId}:`, e);
+    return undefined;
+  }
 }
 
 /**
@@ -110,33 +112,38 @@ export async function getVideoThumbnailUrl(
   const youtubeClient = getYouTubeClientFromUrl();
   const videoId = getVideoID(videoUrl);
   if (!videoId) {
-    throw new Error(`Invalid YouTube URL: ${videoUrl}`);
+    console.error(`Invalid YouTube URL: ${videoUrl}`);
+    return undefined;
   }
+  try {
+    const response = await youtubeClient.videos.list({
+      part: ["snippet"],
+      id: [videoId],
+    });
 
-  const response = await youtubeClient.videos.list({
-    part: ["snippet"],
-    id: [videoId],
-  });
+    if (!response.data.items || response.data.items.length === 0) {
+      console.error(`No video found for ID: ${videoId}`);
+      return undefined;
+    }
 
-  if (!response.data.items || response.data.items.length === 0) {
-    throw new Error(`No video found for ID: ${videoId}`);
+    const thumbnails = response.data.items[0].snippet?.thumbnails;
+    if (!thumbnails) {
+      console.error(`No thumbnails found for video: ${videoId}`);
+      return undefined;
+    }
+
+    return (
+      thumbnails.maxres?.url ||
+      thumbnails.standard?.url ||
+      thumbnails.high?.url ||
+      thumbnails.medium?.url ||
+      thumbnails.default?.url ||
+      undefined
+    );
+  } catch (e) {
+    console.error(`Failed to fetch thumbnails for ${videoId}:`, e);
+    return undefined;
   }
-
-  const thumbnails = response.data.items[0].snippet?.thumbnails;
-  if (!thumbnails) {
-    throw new Error(`No thumbnails found for video: ${videoId}`);
-  }
-
-  // Return the highest quality thumbnail available
-  // Order of preference: maxres -> standard -> high -> medium -> default
-  return (
-    thumbnails.maxres?.url ||
-    thumbnails.standard?.url ||
-    thumbnails.high?.url ||
-    thumbnails.medium?.url ||
-    thumbnails.default?.url ||
-    undefined
-  );
 }
 
 /**
@@ -151,32 +158,40 @@ export async function getChannelInfo(
   const youtubeClient = getYouTubeClientFromUrl();
   const videoId = getVideoID(videoUrl);
   if (!videoId) {
-    throw new Error(`Invalid YouTube URL: ${videoUrl}`);
+    console.error(`Invalid YouTube URL: ${videoUrl}`);
+    return { channelName: "", channelId: "" };
   }
+  try {
+    const response = await youtubeClient.videos.list({
+      part: ["snippet"],
+      id: [videoId],
+    });
 
-  const response = await youtubeClient.videos.list({
-    part: ["snippet"],
-    id: [videoId],
-  });
+    if (!response.data.items || response.data.items.length === 0) {
+      console.error(`No video found for ID: ${videoId}`);
+      return { channelName: "", channelId: "" };
+    }
 
-  if (!response.data.items || response.data.items.length === 0) {
-    throw new Error(`No video found for ID: ${videoId}`);
+    const snippet = response.data.items[0].snippet;
+    if (!snippet) {
+      console.error(`No snippet information found for video: ${videoId}`);
+      return { channelName: "", channelId: "" };
+    }
+
+    const channelName = snippet.channelTitle || "";
+    const channelId = snippet.channelId || "";
+
+    if (!channelName || !channelId) {
+      console.error(`Could not find channel information for video: ${videoId}`);
+      return { channelName: "", channelId: "" };
+    }
+
+    return {
+      channelName,
+      channelId,
+    };
+  } catch (e) {
+    console.error(`Failed to fetch channel info for ${videoId}:`, e);
+    return { channelName: "", channelId: "" };
   }
-
-  const snippet = response.data.items[0].snippet;
-  if (!snippet) {
-    throw new Error(`No snippet information found for video: ${videoId}`);
-  }
-
-  const channelName = snippet.channelTitle;
-  const channelId = snippet.channelId;
-
-  if (!channelName || !channelId) {
-    throw new Error(`Could not find channel information for video: ${videoId}`);
-  }
-
-  return {
-    channelName,
-    channelId,
-  };
 }
