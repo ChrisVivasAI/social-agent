@@ -67,10 +67,10 @@ ${c}
 export async function validateRedditPost(
   state: VerifyRedditGraphState,
 ): Promise<Partial<VerifyRedditGraphState>> {
-  const model = new ChatAnthropic({
-    model: "claude-3-5-sonnet-latest",
-    temperature: 0,
-  }).withStructuredOutput(RELEVANCY_SCHEMA, {
+  const model = getVertexChatModel(
+    "claude-3-5-sonnet-latest",
+    0,
+  ).withStructuredOutput(RELEVANCY_SCHEMA, {
     name: "relevancy",
   });
 

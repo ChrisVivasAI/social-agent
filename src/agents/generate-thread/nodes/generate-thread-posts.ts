@@ -145,10 +145,10 @@ Once you've completed these steps, provide your tweet inside <tweet> tags. Do no
 export async function generateThreadPosts(
   state: GenerateThreadState,
 ): Promise<Partial<GenerateThreadState>> {
-  const model = new ChatAnthropic({
-    model: "claude-3-5-sonnet-latest",
-    temperature: 0, // TODO: Eval different temperatures
-  });
+  const model = getVertexChatModel(
+    "claude-3-5-sonnet-latest",
+    0, // TODO: Eval different temperatures
+  );
 
   const formattedFirstPostPrompt = FIRST_POST_PROMPT.replace(
     "{THREAD_PLAN}",
