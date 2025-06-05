@@ -76,20 +76,18 @@ export async function getVideoSummary(
     }
   }
 
+  let shouldSummarize = true;
   if (videoDurationS === undefined) {
-    // TODO: Handle this better
-    throw new Error("Failed to get video duration");
-  }
-
-  // 1800 = 30 minutes
-  if (videoDurationS > 1800) {
-    // TODO: Replace with interrupt requesting user confirm if they want to continue
-    throw new Error(
-      "Video is longer than 30 minutes, please confirm you want to continue.",
+    console.warn("Could not determine video duration for", url);
+  } else if (videoDurationS > 1800) {
+    console.warn(
+      "Video is longer than 30 minutes, skipping summary generation:",
+      url,
     );
+    shouldSummarize = false;
   }
 
-  const videoSummary = await generateVideoSummary(url);
+  const videoSummary = shouldSummarize ? await generateVideoSummary(url) : "";
 
   return {
     thumbnail: videoThumbnail,

@@ -253,10 +253,10 @@ export async function humanNode(
   const postDateString = castArgs.date || defaultDateString;
   const postDate = parseDateResponse(postDateString);
   if (!postDate) {
-    // TODO: Handle invalid dates better
-    throw new Error(
-      `Invalid date provided. Expected format: 'MM/dd/yyyy hh:mm a z' or 'P1'/'P2'/'P3'. Received: '${postDateString}'`,
-    );
+    return {
+      next: "unknownResponse",
+      userResponse: `Invalid date provided: '${postDateString}'. Expected format 'MM/dd/yyyy hh:mm a z' or priority level (P1/P2/P3).`,
+    };
   }
 
   let imageState: { imageUrl: string; mimeType: string } | undefined =
@@ -267,6 +267,12 @@ export async function humanNode(
       imageState = processedImage;
     } else if (processedImage === "remove") {
       imageState = undefined;
+    } else if (castArgs.image) {
+      return {
+        next: "unknownResponse",
+        userResponse:
+          "Unsupported image MIME type. Supported types: image/jpeg, image/gif, image/png, image/webp.",
+      };
     } else {
       imageState = state.image;
     }
@@ -276,7 +282,6 @@ export async function humanNode(
     next: "schedulePost",
     scheduleDate: postDate,
     post: responseOrPost,
-    // TODO: Update so if the mime type is blacklisted, it re-routes to human node with an error message.
     image: imageState,
     userResponse: undefined,
   };
