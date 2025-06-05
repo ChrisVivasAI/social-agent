@@ -57,10 +57,10 @@ export async function rewritePosts(
     throw new Error("Can not rewrite posts without user response");
   }
 
-  const model = new ChatAnthropic({
-    model: "claude-3-5-sonnet-latest",
-    temperature: 0,
-  }).bindTools(
+  const model = getVertexChatModel(
+    "claude-3-5-sonnet-latest",
+    0,
+  ).bindTools(
     [
       {
         name: "update_posts",

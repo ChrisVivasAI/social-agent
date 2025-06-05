@@ -66,10 +66,10 @@ Please take your time, and identify the best type of post to generate for these 
 export async function determinePostType(
   state: SupervisorState,
 ): Promise<Partial<SupervisorState>> {
-  const model = new ChatAnthropic({
-    model: "claude-3-5-sonnet-latest",
-    temperature: 0,
-  }).withStructuredOutput(postTypeSchema, {
+  const model = getVertexChatModel(
+    "claude-3-5-sonnet-latest",
+    0,
+  ).withStructuredOutput(postTypeSchema, {
     name: "postType",
   });
 

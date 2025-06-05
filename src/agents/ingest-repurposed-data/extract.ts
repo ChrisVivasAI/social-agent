@@ -53,10 +53,10 @@ const extractionSchema = z.object({
 async function extractContentsFunc(
   messageText: string,
 ): Promise<RepurposedContent | undefined> {
-  const model = new ChatAnthropic({
-    model: "claude-3-7-sonnet-latest",
-    temperature: 0,
-  }).bindTools(
+  const model = getVertexChatModel(
+    "claude-3-7-sonnet-latest",
+    0,
+  ).bindTools(
     [
       {
         name: "extract_content",

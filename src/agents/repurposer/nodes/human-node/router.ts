@@ -26,10 +26,10 @@ export async function routeResponse(
   posts: RepurposedPost[],
   userResponse: string,
 ): Promise<z.infer<typeof routeResponseSchema>> {
-  const model = new ChatAnthropic({
-    model: "claude-3-5-sonnet-latest",
-    temperature: 0,
-  }).bindTools(
+  const model = getVertexChatModel(
+    "claude-3-5-sonnet-latest",
+    0,
+  ).bindTools(
     [
       {
         name: "route_response",

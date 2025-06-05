@@ -95,10 +95,10 @@ export async function generatePosts(
       ),
   });
 
-  const model = new ChatAnthropic({
-    model: "claude-3-5-sonnet-latest",
-    temperature: 0.5,
-  }).bindTools([
+  const model = getVertexChatModel(
+    "claude-3-5-sonnet-latest",
+    0.5,
+  ).bindTools([
     {
       name: `write_${postOrPosts}`,
       description: `Write ${numPosts} LinkedIn/Twitter ${postOrPosts} based on the marketing report and post campaign plan provided.`,
