@@ -6,8 +6,8 @@ This guide explains how we've migrated from Anthropic Claude to Google Vertex AI
 
 1. Created a utility function in `src/utils/vertex-model.ts` to standardize Vertex AI model initialization
 2. Updated key model usage in several core files:
-   - `src/agents/generate-post/nodes/geterate-post/index.ts`
-   - `src/agents/generate-post/nodes/rewrite-post.ts` 
+   - `src/agents/generate-post/nodes/generate-post/index.ts`
+   - `src/agents/generate-post/nodes/rewrite-post.ts`
    - `src/agents/generate-post/nodes/condense-post.ts`
 3. Updated environment settings in `.env` to comment out Anthropic API keys
 4. Created a conversion script at `scripts/convert-to-vertex.js` to help automate the migration

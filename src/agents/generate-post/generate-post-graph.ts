@@ -10,7 +10,7 @@ import {
   GeneratePostInputAnnotation,
 } from "./generate-post-state.js";
 import { generateContentReport } from "./nodes/generate-report/index.js";
-import { generatePost } from "./nodes/geterate-post/index.js";
+import { generatePost } from "./nodes/generate-post/index.js";
 import { humanNode } from "./nodes/human-node/index.js";
 import { rewritePost } from "./nodes/rewrite-post.js";
 import { schedulePost } from "./nodes/schedule-post/index.js";
